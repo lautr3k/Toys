@@ -189,6 +189,8 @@ class Builder
         // Set some paths alias
         $builder_path = $this->set_path('builder', getcwd());
         $sources_path = $this->set_path('sources', $sources_path);
+        $config_path  = $sources_path . '/' . $this->config['toys_filename'];
+        $config_path  = $this->set_path('config' , $config_path);
         $output_path  = $this->set_path('output' , $release_path);
         $cache_path   = $this->set_path('cache'  , $builder_path, 'cache');
         $release_path = $this->set_path('release', $release_path, $this->output_type);
@@ -218,8 +220,7 @@ class Builder
         }
 
         // Load main configuration as array
-        $config = $this->get_path('sources', $this->config['toys_filename']);
-        Helper::merge($this->config, Helper::load_json_file($config, true));
+        Helper::merge($this->config, Helper::load_json_file($config_path, true));
 
         // Set main file path
         $main_file = $this->get_path('sources', $this->config['main_file']);
