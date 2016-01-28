@@ -117,7 +117,7 @@ class Builder
         'lang'                => 'en',
         'languages'           => ['en'],
         'main_file'           => 'main.tpl',
-        'toys_filename'      => 'toys.json',
+        'toys_filename'       => 'toys.json',
         'compressor_filename' => 'compressor.php'
     );
 
