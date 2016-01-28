@@ -744,6 +744,12 @@ class Builder
     */
     protected function render_views_tag()
     {
+        // No views to render
+        if (empty($this->modules_files['views']))
+        {
+            return '';
+        }
+
         // HTML tag collection
         $html_collection = array();
 
