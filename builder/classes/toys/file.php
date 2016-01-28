@@ -36,6 +36,14 @@ class File
     public $name = null;
 
     /**
+    * Id.
+    *
+    * @property domid
+    * @type     {String}
+    */
+    public $id = null;
+
+    /**
     * Relative path (from module).
     *
     * @property relative_path
@@ -89,6 +97,10 @@ class File
 
         // Set the name
         $this->name = basename($path);
+
+        // Set the id (kebab-case)
+        $id = preg_replace('|[^a-zA-Z0-9_\-]+|', '-', $this->name);
+        $this->id = strtolower($module->id . '-' . $id);
 
         // Relative path
         $this->relative_path = str_replace($module->sources_path . '/', '', $path);

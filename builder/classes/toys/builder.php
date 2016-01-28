@@ -756,15 +756,8 @@ class Builder
         // for each views
         foreach ($this->modules_files['views'] as $view)
         {
-            // Set the view name (filename without extenssion)
-            $name = pathinfo($view->name, PATHINFO_FILENAME);
-
-            // Set the view DOM id (kebab-case)
-            $id = preg_replace('|[^a-zA-Z0-9_\-]+|', '-', $name);
-            $id = strtolower($view->module->id . '-' . $id) . '-view';
-
             // Append HTML start tag
-            $html_collection[] = '<script type="text/html" id="' . $id . '">';
+            $html_collection[] = '<script type="text/html" id="' . $view->id . '">';
 
             // Append view content
             $html_collection[] = Helper::get_file_contents($view->path);
@@ -775,6 +768,45 @@ class Builder
 
         // Return assets block
         return $this->render_html_collection('views', $html_collection);
+    }
+
+    /**
+    * Return parsed view.
+    *
+    * @protected
+    * @method render_view_tag
+    * @return {String}
+    */
+    protected function get_view($view_id, $args = [])
+    {
+        foreach ($this->modules_files['views'] as $path => $view) {
+            if ($view->id === $view_id) {
+                if (in_array('remove', $args)) {
+                    unset($this->modules_files['views'][$path]);
+                }
+                return $view;
+            }
+        }
+        return false;
+    }
+
+    /**
+    * Return parsed view.
+    *
+    * @protected
+    * @method render_view_tag
+    * @return {String}
+    */
+    protected function render_view_tag($args)
+    {
+        $view_id = array_shift($args);
+        $view    = $this->get_view($view_id, $args);
+
+        if ($view) {
+            return $this->parse_view($view->get_data());
+        }
+
+        return '';
     }
 
     /**
@@ -860,7 +892,7 @@ class Builder
     * @param  {Array} $matches
     * @return {String}
     */
-    protected function parse_main_file($matches)
+    protected function parse_view_callback($matches)
     {
         // Extract the key
         $key = trim($matches[1]);
@@ -873,13 +905,15 @@ class Builder
         }
 
         // Extract callback name
+        $args   = array_map('trim', explode(':', $key));
+        $key    = array_shift($args);
         $method = 'render_' . $key . '_tag';
 
         // If callback exist
         if (method_exists($this, $method))
         {
             // Return the callback result
-            return $this->$method();
+            return call_user_func(array($this, $method), $args);
         }
 
         // If local variable exist
@@ -891,6 +925,19 @@ class Builder
 
         // Return original
         return $matches[0];
+    }
+
+    /**
+    * Return parsed view.
+    *
+    * @protected
+    * @method parse_view
+    */
+    protected function parse_view($view)
+    {
+        return preg_replace_callback(
+            '|{{([^}}]+?)}}|u', array($this, 'parse_view_callback'), $view
+        );
     }
 
     /**
@@ -917,10 +964,7 @@ class Builder
         $this->output = Helper::normalize_contents($this->output);
 
         // Parse the buffer tags
-        $this->output = preg_replace_callback
-        (
-            '|{{([^}}]+?)}}|u', array($this,'parse_main_file'), $this->output
-        );
+        $this->output = $this->parse_view($this->output);
 
         // Return the buffer
         return $this->output;
