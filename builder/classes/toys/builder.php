@@ -797,7 +797,7 @@ class Builder
     * @method render_view_tag
     * @return {String}
     */
-    protected function render_view_tag($args)
+    protected function render_view_tag($args, $original)
     {
         $view_id = array_shift($args);
         $view    = $this->get_view($view_id, $args);
@@ -806,7 +806,7 @@ class Builder
             return $this->parse_view($view->get_data());
         }
 
-        return '';
+        return $original;
     }
 
     /**
@@ -869,7 +869,7 @@ class Builder
         }
 
         // Return JSON string
-        return json_encode($compiled);
+        return empty($compiled) ? '{}' : json_encode($compiled);
     }
 
     /**
@@ -913,7 +913,7 @@ class Builder
         if (method_exists($this, $method))
         {
             // Return the callback result
-            return call_user_func(array($this, $method), $args);
+            return call_user_func(array($this, $method), $args, $matches[0]);
         }
 
         // If local variable exist
