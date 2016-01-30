@@ -330,7 +330,9 @@ class Module
                 else
                 {
                     // Get an flat files three (recursive)
-                    $files += Helper::scan_path($path);
+                    foreach (Helper::scan_path($path) as $path) {
+                        $files[$path] = new File($this, $type, $path);
+                    }
                 }
             }
         }
